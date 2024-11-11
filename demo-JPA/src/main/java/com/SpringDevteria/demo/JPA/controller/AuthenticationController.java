@@ -22,11 +22,11 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
 
-        Boolean result = authenticationService.authenticate(request);
+        AuthenticationResponse result = authenticationService.authenticate(request);
 
         return ApiResponse.<AuthenticationResponse>builder() //Trả về api response
                 .result(AuthenticationResponse.builder()
-                        .authenticated(result) //khởi tạo authenticationResponse
+                        .authenticated(result.getAuthenticated()) //khởi tạo authenticationResponse
                         .build())
                 .build();
     }

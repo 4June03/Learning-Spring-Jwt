@@ -1,30 +1,77 @@
 package com.SpringDevteria.demo.JPA.service;
 
 import com.SpringDevteria.demo.JPA.dto.request.AuthenticationRequest;
+import com.SpringDevteria.demo.JPA.dto.response.AuthenticationResponse;
 import com.SpringDevteria.demo.JPA.entity.User;
 import com.SpringDevteria.demo.JPA.exception.AppException;
 import com.SpringDevteria.demo.JPA.exception.ErrorCode;
 import com.SpringDevteria.demo.JPA.repository.UserRepository;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true)
 public class AuthenticationService {
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     private UserRepository userRepository;
 
-    public Boolean authenticate(AuthenticationRequest request){
+    @NonFinal //đánh dấu để k inject vào constructor
+    protected static final String SIGNER_KEY = "AKV7H0VtNnx7+8rDTcumEuJA5WKDPe3O9G3NWB0ZJI/8zQoQ007d7PmPUcYRQreb";
+
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request){
         //Lấy ra user
         User user = userRepository.findByUsername(request.getUsername()).orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        Boolean isMatched = passwordEncoder.matches(request.getPassword(), user.getPassword()); //kiểm tra pass có match hay không
+        Boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword()); //kiểm tra pass có match hay không
 
-        return isMatched;
+        if(!authenticated){
+            //Nếu mật khẩu sai thì ném ra Exception
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+
     }
+
+
+    //Method trả về Token
+    private String generateToken(String username){
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512); //Tham số đầu tiên của JWSObject
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() //Tạo claimset cho Payload
+                .subject(username) //Tên
+                .issuer("HuuNghia.com") //xác định token issue từ ai
+                .issueTime(new Date()) //Thời điểm issue token
+                .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli())) //Thời gian token hết hạn (1hrs)
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject()); //cần convert claimset sang JSON Object
+
+        JWSObject jwsObject = new JWSObject(header,payload);//Token
+
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes())); //cần generate 1 key 32 byte => lên gg generate 1 key random
+            return jwsObject.serialize(); //Trả về token
+        } catch (JOSEException e) {
+            log.error("Cannot create token");
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

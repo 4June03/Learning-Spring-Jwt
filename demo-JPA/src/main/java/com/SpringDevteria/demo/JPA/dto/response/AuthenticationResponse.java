@@ -10,5 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class AuthenticationResponse {
+
+    String token; //Response trả về token
     private Boolean authenticated;
 }
