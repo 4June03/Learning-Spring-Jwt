@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,8 @@ public class AuthenticationService {
     private UserRepository userRepository;
 
     @NonFinal //đánh dấu để k inject vào constructor
-    protected static final String SIGNER_KEY = "AKV7H0VtNnx7+8rDTcumEuJA5WKDPe3O9G3NWB0ZJI/8zQoQ007d7PmPUcYRQreb";
+    @Value("${jwt.signerKey}")
+    protected String SIGNER_KEY;
 
 
     public IntrospectResponse introspectAuthenticate(IntrospectRequest request) throws JOSEException, ParseException {
