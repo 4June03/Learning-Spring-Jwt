@@ -22,12 +22,10 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
 
-        AuthenticationResponse result = authenticationService.authenticate(request);
+        var result = authenticationService.authenticate(request);
 
         return ApiResponse.<AuthenticationResponse>builder() //Trả về api response
-                .result(AuthenticationResponse.builder()
-                        .authenticated(result.getAuthenticated()) //khởi tạo authenticationResponse
-                        .build())
+                .result(result) //AuthenticationResponse
                 .build();
     }
 

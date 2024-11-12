@@ -33,24 +33,30 @@ public class AuthenticationService {
     protected static final String SIGNER_KEY = "AKV7H0VtNnx7+8rDTcumEuJA5WKDPe3O9G3NWB0ZJI/8zQoQ007d7PmPUcYRQreb";
 
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request){
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
         //Lấy ra user
-        User user = userRepository.findByUsername(request.getUsername()).orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findByUsername(request.getUsername()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         Boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword()); //kiểm tra pass có match hay không
 
-        if(!authenticated){
+        if (!authenticated) {
             //Nếu mật khẩu sai thì ném ra Exception
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
+        var token = generateToken(request.getUsername());//Lấy token qua username
 
+
+        return AuthenticationResponse.builder()
+                .token(token)  //Trả về token
+                .authenticated(true)
+                .build();
     }
 
 
     //Method trả về Token
-    private String generateToken(String username){
+    private String generateToken(String username) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512); //Tham số đầu tiên của JWSObject
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() //Tạo claimset cho Payload
@@ -62,11 +68,11 @@ public class AuthenticationService {
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject()); //cần convert claimset sang JSON Object
 
-        JWSObject jwsObject = new JWSObject(header,payload);//Token
+        JWSObject jwsObject = new JWSObject(header, payload);//Token
 
         try {
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes())); //cần generate 1 key 32 byte => lên gg generate 1 key random
-            return jwsObject.serialize(); //Trả về token
+            return jwsObject.serialize(); //Trả về token theo kiểu String
         } catch (JOSEException e) {
             log.error("Cannot create token");
             throw new RuntimeException(e);
