@@ -1,14 +1,18 @@
 package com.SpringDevteria.demo.JPA.service;
 
 import com.SpringDevteria.demo.JPA.dto.request.AuthenticationRequest;
+import com.SpringDevteria.demo.JPA.dto.request.IntrospectRequest;
 import com.SpringDevteria.demo.JPA.dto.response.AuthenticationResponse;
+import com.SpringDevteria.demo.JPA.dto.response.IntrospectResponse;
 import com.SpringDevteria.demo.JPA.entity.User;
 import com.SpringDevteria.demo.JPA.exception.AppException;
 import com.SpringDevteria.demo.JPA.exception.ErrorCode;
 import com.SpringDevteria.demo.JPA.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
@@ -18,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -32,6 +37,21 @@ public class AuthenticationService {
     @NonFinal //đánh dấu để k inject vào constructor
     protected static final String SIGNER_KEY = "AKV7H0VtNnx7+8rDTcumEuJA5WKDPe3O9G3NWB0ZJI/8zQoQ007d7PmPUcYRQreb";
 
+
+    public IntrospectResponse introspectAuthenticate(IntrospectRequest request) throws JOSEException, ParseException {
+        var token = request.getToken(); //Lấy token từ request
+
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes()); //Truyền vào key mã hóa
+        SignedJWT signedJWT = SignedJWT.parse(token); //Lấy token
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime(); //Lấy ra thời gian hết hạn
+
+        var verified =  signedJWT.verify(verifier); //Verify
+
+        return IntrospectResponse.builder()
+                .valid(verified && expiryTime.after(new Date())) //Trả về kết quả Token đã được xác thực và chưa hết hạn
+                .build();
+    }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         //Lấy ra user
