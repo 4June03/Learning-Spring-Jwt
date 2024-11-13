@@ -48,6 +48,7 @@ public class SecurityConfig {
                         jwtConfigurer.decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()) //Customize SCOPE thành ROLE
                 ) //Khi cấu hình cần cung cấp 1 jwtDecoder
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) //Khi authentication fail thì điều hướng
         );
 
         http.csrf(csrf -> csrf.disable()); //

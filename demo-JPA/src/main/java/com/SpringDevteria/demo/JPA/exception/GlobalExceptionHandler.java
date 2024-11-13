@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.nio.file.AccessDeniedException;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -43,12 +45,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = AppException.class) //Tham số value là loại exception muốn bắt
     ResponseEntity<ApiResponse> handleAppException(AppException e){ //Phương thức xử lí AppException tự định nghĩa
+        ErrorCode errorCode = e.getErrorCode();
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setCode(e.getErrorCode().getCode());
         apiResponse.setMessage(e.getErrorCode().getMessage());
 
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(apiResponse);
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse> handleAccessDeniedException(AccessDeniedException e){
+        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
     }
 
 }
