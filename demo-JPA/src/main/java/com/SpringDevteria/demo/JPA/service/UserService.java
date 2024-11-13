@@ -4,6 +4,7 @@ import com.SpringDevteria.demo.JPA.dto.request.UserCreationRequest;
 import com.SpringDevteria.demo.JPA.dto.request.UserUpdateRequest;
 import com.SpringDevteria.demo.JPA.dto.response.UserDto;
 import com.SpringDevteria.demo.JPA.entity.User;
+import com.SpringDevteria.demo.JPA.enums.Role;
 import com.SpringDevteria.demo.JPA.exception.AppException;
 import com.SpringDevteria.demo.JPA.exception.ErrorCode;
 import com.SpringDevteria.demo.JPA.mapper.UserMapper;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -25,28 +27,32 @@ import java.util.List;
 public class UserService {
 
     private UserRepository userRepository;
-
     private UserMapper userMapper;
+    private PasswordEncoder passwordEncoder;
 
-    public User createUser(UserCreationRequest request){
+    public UserDto createUser(UserCreationRequest request){
 
 
         if(userRepository.existsByUsername(request.getUsername())){
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
-        //Map UserCreationRequest sang kiểu User
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10); //Tham số là độ mạnh của mã hóa, thường là 10
 
+//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10); //Tham số là độ mạnh của mã hóa, thường là 10
+        //Map UserCreationRequest sang kiểu User
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword())); //Mã hóa mật khẩu
 
+        HashSet<String> roles = new HashSet<>(); //Tạo ds role
+        roles.add(Role.USER.name());
 
-        return userRepository.save(user);
+        user.setRoles(roles); //Set role mặc ddinnhj là user
+
+        return userMapper.toUserDto(userRepository.save(user)) ;
     }
 
-    public List<User> getUsers(){
-        return userRepository.findAll();
+    public List<UserDto> getUsers(){
+        return userMapper.toUserDto(userRepository.findAll()) ;
     }
 
     public UserDto getUser(String id){

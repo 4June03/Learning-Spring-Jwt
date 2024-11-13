@@ -22,11 +22,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor
@@ -67,7 +69,7 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        var token = generateToken(request.getUsername());//Lấy token qua username
+        var token = generateToken(user);//Lấy token qua username
 
 
         return AuthenticationResponse.builder()
@@ -78,14 +80,15 @@ public class AuthenticationService {
 
 
     //Method trả về Token
-    private String generateToken(String username) {
+    private String generateToken(User user) { //đổi param thành user để lấy ttin user
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512); //Tham số đầu tiên của JWSObject
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() //Tạo claimset cho Payload
-                .subject(username) //Tên
+                .subject(user.getUsername()) //Tên
                 .issuer("HuuNghia.com") //xác định token issue từ ai
                 .issueTime(new Date()) //Thời điểm issue token
                 .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli())) //Thời gian token hết hạn (1hrs)
+                .claim("scope",buildScope(user)) //Scope chứa roles của user
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject()); //cần convert claimset sang JSON Object
@@ -99,6 +102,15 @@ public class AuthenticationService {
             log.error("Cannot create token");
             throw new RuntimeException(e);
         }
+    }
+
+    private String buildScope(User user){ //Phương thức để build Roles scope vì role scope trong toke cách nhau 1 space
+        StringJoiner stringJoiner = new StringJoiner(" "); //1 space mỗi Role
+        if(!CollectionUtils.isEmpty(user.getRoles())){
+            user.getRoles().forEach(stringJoiner::add);
+        }
+
+        return stringJoiner.toString();
     }
 
 

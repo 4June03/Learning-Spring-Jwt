@@ -7,9 +7,13 @@ import com.SpringDevteria.demo.JPA.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring") //ComponeModel="spring" chỉ định sẽ tạo một bean cho phép inject trong các nơi khác
 public interface UserMapper {
     User toUser(UserCreationRequest request);
+
+    List<UserDto> toUserDto(List<User> users);
 
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
