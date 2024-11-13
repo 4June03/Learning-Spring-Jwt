@@ -54,6 +54,14 @@ public class UserController {
 
     }
 
+    //Phương thức truyền token để lấy thông tin của chính mình
+    @GetMapping("/myinfo")
+    ApiResponse<UserDto> myInfo(){
+        return ApiResponse.<UserDto>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
+
     @PutMapping("/{userId}")
     UserDto updateUser(@PathVariable String userId ,@RequestBody UserUpdateRequest request){
         return userService.updateUser(userId,request);

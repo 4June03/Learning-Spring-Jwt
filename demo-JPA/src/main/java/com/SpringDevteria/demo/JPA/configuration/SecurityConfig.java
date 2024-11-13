@@ -1,5 +1,6 @@
 package com.SpringDevteria.demo.JPA.configuration;
 
+import com.SpringDevteria.demo.JPA.enums.Role;
 import com.nimbusds.jose.JWSAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +35,7 @@ public class SecurityConfig {
                 request ->
                         request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                                 .requestMatchers(HttpMethod.GET).hasAuthority("ROLE_ADMIN") //có ROLE admin mới lấy được danh sách user
+                                .requestMatchers(HttpMethod.GET,"/users/myinfo").permitAll()
                                 .anyRequest().authenticated()
 
         );
