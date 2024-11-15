@@ -106,9 +106,9 @@ public class AuthenticationService {
 
     private String buildScope(User user){ //Phương thức để build Roles scope vì role scope trong toke cách nhau 1 space
         StringJoiner stringJoiner = new StringJoiner(" "); //1 space mỗi Role
-        if(!CollectionUtils.isEmpty(user.getRoles())){
-            user.getRoles().forEach(stringJoiner::add);
-        }
+//        if(!CollectionUtils.isEmpty(user.getRoles())){
+//            user.getRoles().forEach(stringJoiner::add);
+//        }
 
         return stringJoiner.toString();
     }

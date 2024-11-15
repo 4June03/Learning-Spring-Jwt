@@ -47,7 +47,7 @@ public class UserService {
         HashSet<String> roles = new HashSet<>(); //Tạo ds role
         roles.add(Role.USER.name());
 
-        user.setRoles(roles); //Set role mặc ddinnhj là user
+//        user.setRoles(roles); //Set role mặc ddinnhj là user
 
         return userMapper.toUserDto(userRepository.save(user)) ;
     }
