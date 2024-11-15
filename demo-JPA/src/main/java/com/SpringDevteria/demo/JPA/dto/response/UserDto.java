@@ -18,5 +18,5 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private LocalDate dob;
-    Set<String> roles;
+    Set<RoleResponse> roles;
 }

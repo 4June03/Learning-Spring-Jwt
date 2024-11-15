@@ -36,6 +36,7 @@ public class SecurityConfig {
                         request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                                 .requestMatchers(HttpMethod.GET,"/identity/permissions").hasAuthority("ROLE_ADMIN")//có ROLE admin mới lấy được danh sách user
                                 .requestMatchers(HttpMethod.GET,"/users/myinfo").permitAll()
+                                .requestMatchers(HttpMethod.GET,"identity/users").hasAuthority("ROLE_ADMIN")
                                 .anyRequest().authenticated()
 
         );

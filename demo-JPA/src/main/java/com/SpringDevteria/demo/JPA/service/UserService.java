@@ -8,6 +8,7 @@ import com.SpringDevteria.demo.JPA.enums.Role;
 import com.SpringDevteria.demo.JPA.exception.AppException;
 import com.SpringDevteria.demo.JPA.exception.ErrorCode;
 import com.SpringDevteria.demo.JPA.mapper.UserMapper;
+import com.SpringDevteria.demo.JPA.repository.RoleRepository;
 import com.SpringDevteria.demo.JPA.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,6 +31,7 @@ public class UserService {
     private UserRepository userRepository;
     private UserMapper userMapper;
     private PasswordEncoder passwordEncoder;
+    private RoleRepository roleRepository;
 
     public UserDto createUser(UserCreationRequest request){
 
@@ -68,6 +70,9 @@ public class UserService {
 //        user.setDob(request.getDob());
         //sử dụng mapper để loại bỏ các dòng code dài dòng
         userMapper.updateUser(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserDto(userRepository.save(user));
     }

@@ -5,6 +5,7 @@ import com.SpringDevteria.demo.JPA.dto.request.UserUpdateRequest;
 import com.SpringDevteria.demo.JPA.dto.response.UserDto;
 import com.SpringDevteria.demo.JPA.entity.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public interface UserMapper {
 
     List<UserDto> toUserDto(List<User> users);
 
+    @Mapping(target = "roles",ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
     //sử dụng @Mapping(source="",target="") nếu 2 trường không cùng tên

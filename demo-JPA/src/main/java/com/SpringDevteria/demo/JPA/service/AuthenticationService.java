@@ -106,9 +106,15 @@ public class AuthenticationService {
 
     private String buildScope(User user){ //Phương thức để build Roles scope vì role scope trong toke cách nhau 1 space
         StringJoiner stringJoiner = new StringJoiner(" "); //1 space mỗi Role
-//        if(!CollectionUtils.isEmpty(user.getRoles())){
-//            user.getRoles().forEach(stringJoiner::add);
-//        }
+        //Cập nhật lại Role của User
+        if(!CollectionUtils.isEmpty(user.getRoles())){
+            user.getRoles().forEach(role->{
+                stringJoiner.add(role.getName()); //Add list role vào scope
+                if(!CollectionUtils.isEmpty(role.getPermissions()))
+                    role.getPermissions()
+                            .forEach(permission -> stringJoiner.add(permission.getName())); //Add danh sách permission vào
+            });
+        }
 
         return stringJoiner.toString();
     }
